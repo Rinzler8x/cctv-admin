@@ -128,7 +128,7 @@ const Home = () => {
             <aside className="hidden w-64 overflow-y-auto bg-gray-800 md:block">
                 <div className="flex h-full flex-col">
                     <div className="flex h-16 items-center justify-center">
-                        <span className="text-2xl font-bold text-white">CCTV Admin Panel</span>
+                        <span className="text-2xl font-bold text-white">SurveilMap</span>
                     </div>
                     <nav className="flex-1 px-2 py-4">
                         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>

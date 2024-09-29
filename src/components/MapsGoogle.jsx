@@ -1,33 +1,198 @@
-import React, { useEffect, useState } from 'react';
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+// import React, { useState, useEffect } from 'react';
+// import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 
-const mapContainerStyle = {
-  width: '100%',
-  height: '400px', // Adjust height as necessary
+// const ZoomControl = () => {
+//   const map = useMap();
+//   const [zoom, setZoom] = useState(map.getZoom());
+
+//   useEffect(() => {
+//     const listener = map.addListener('zoom_changed', () => {
+//       setZoom(map.getZoom());
+//     });
+
+//     return () => {
+//       google.maps.event.removeListener(listener);
+//     };
+//   }, [map]);
+
+//   return (
+//     <div className="absolute bottom-4 left-4 bg-white p-2 rounded shadow">
+//       Zoom: {zoom}
+//     </div>
+//   );
+// };
+
+// const MapsGoogle = () => {
+//   const [position, setPosition] = useState({ lat: 15.4993, lng: 73.8359 });
+//   const [openInfoWindowIndex, setOpenInfoWindowIndex] = useState(null); // Track which InfoWindow is open
+//   const [loading, setLoading] = useState(true);
+//   const [cameraData, setCameraData] = useState([]); // State to store the camera data from the API
+
+//   // Function to fetch camera data
+//   const fetchCameraData = async (lat, lng) => {
+//     try {
+//       const response = await fetch('http://10.70.13.203:8080/nearby_cameras', { // Replace with your actual API endpoint
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json',
+//         },
+//         body: JSON.stringify({
+//           latitude: lat,
+//           longitude: lng,
+//           radius_meters: 2000, // Example data, adjust as necessary
+//           status_filter: '', // Example filter
+//           ownership_filter: '', // Example filter
+//         }),
+//       });
+//       if (!response.ok) {
+//         throw new Error('Network response was not ok');
+//       }
+
+//       const data = await response.json();
+//       console.log(data)
+//       // return
+//       setCameraData(data); // Save the response to state
+//     } catch (error) {
+//       console.error('Error fetching camera data:', error);
+//     }
+//   };
+
+//   // Get current position
+//   useEffect(() => {
+//     if (navigator.geolocation) {
+//       navigator.geolocation.getCurrentPosition(
+//         (position) => {
+//           const { latitude, longitude } = position.coords;
+//           setPosition({ lat: latitude, lng: longitude });
+//           setLoading(false);
+
+//           // Fetch camera data once we have the current position
+//           fetchCameraData(latitude, longitude);
+//         },
+//         (error) => {
+//           console.error('Error getting current location:', error);
+//           setLoading(false);
+//         },
+//         { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+//       );
+//     } else {
+//       console.error('Geolocation is not supported by this browser.');
+//       setLoading(false);
+//     }
+//   }, []);
+
+//   if (loading) {
+//     return <div>Loading...</div>;
+//   }
+
+//   return (
+//     <APIProvider apiKey='AIzaSyBN7WeAsX5Ya5BvLY_4AKQFklaDSBIPylU'>
+//       <div className="h-[80vh] relative">
+//         <Map 
+//           defaultZoom={15}
+//           defaultCenter={position} 
+//           mapId='492a1f563fd9d924'
+//         >
+//           {/* Marker for the user's current position */}
+//           <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
+//             <Pin background={'#22C55E'} borderColor={'#065F46'} glyphColor={'#FFFFFF'} />
+//           </AdvancedMarker>
+
+//           {/* InfoWindow for the user's current location */}
+//           {openInfoWindowIndex === 'user' && 
+//             <InfoWindow position={position} onCloseClick={() => setOpenInfoWindowIndex(null)}>
+//               <p>Your current location</p>
+//             </InfoWindow>
+//           }
+
+//           {/* Create a marker for each camera in the cameraData */}
+//           {cameraData.map((camera, index) => (
+//             <AdvancedMarker
+//               key={index}
+//               position={{ lat: Number(camera.latitude), lng: Number(camera.longitude) }} // Camera location
+//               onClick={() => setOpenInfoWindowIndex(index)} // Open InfoWindow when marker is clicked
+//             >
+//               <Pin background={'#FF5722'} borderColor={'#BF360C'} glyphColor={'#FFFFFF'} />
+//             </AdvancedMarker>
+//           ))}
+
+//           {/* InfoWindows for each camera */}
+//           {cameraData.map((camera, index) => (
+//             openInfoWindowIndex === index && (
+//               <InfoWindow
+//                 key={index}
+//                 position={{ lat: Number(camera.latitude), lng: Number(camera.longitude) }}
+//                 onCloseClick={() => setOpenInfoWindowIndex(null)}
+//               >
+//                 <div>
+//                   <p className='text-[16px]'><strong>Location:</strong> {camera.location || 'No location available'}</p>
+//                   <p className='text-[16px]'><strong>Owner:</strong> {camera.owner_name || 'No owner available'}</p>
+//                   <p className='text-[16px]'><strong>Type:</strong> {camera.private_govt || 'No type available'}</p>
+//                   <p className='text-[16px]'><strong>Contact No:</strong> {camera.contact_no || 'No contact no. available'}</p>
+//                   <p className='text-[16px]'><strong>Coverage:</strong> {camera.coverage || 'No coverage available'}</p>
+//                   <p className='text-[16px]'><strong>Backup:</strong> {camera.backup || 'No backup available'}</p>
+//                   <p className='text-[16px]'><strong>Status:</strong> {camera.status || 'Unknown'}</p>
+//                   <p className='text-[16px]'><strong>Ownership:</strong> {camera.ownership || 'Unknown'}</p>
+//                 </div>
+//               </InfoWindow>
+//             )
+//           ))}
+//           <ZoomControl />
+//         </Map>
+//       </div>
+//     </APIProvider>
+//   );
+// };
+
+// export default MapsGoogle;
+
+import React, { useState, useEffect } from 'react';
+import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from '@vis.gl/react-google-maps';
+import { Button } from "@/components/ui/button";
+
+const ZoomControl = () => {
+  const map = useMap();
+  const [zoom, setZoom] = useState(map.getZoom());
+
+  useEffect(() => {
+    const listener = map.addListener('zoom_changed', () => {
+      setZoom(map.getZoom());
+    });
+
+    return () => {
+      google.maps.event.removeListener(listener);
+    };
+  }, [map]);
+
+  return (
+    <div className="absolute bottom-4 left-4 bg-white p-2 rounded shadow">
+      Zoom: {zoom}
+    </div>
+  );
 };
 
 const MapsGoogle = () => {
-  const [locationData, setLocationData] = useState([]); // Store camera data
-  const [center, setCenter] = useState({ lat: 0, lng: 0 }); // Default center location
-  const [watchId, setWatchId] = useState(null); // Store the watch ID for tracking
+  const [position, setPosition] = useState({ lat: 53.54, lng: 10 });
+  const [openInfoWindowIndex, setOpenInfoWindowIndex] = useState(null); // Track which InfoWindow is open
+  const [loading, setLoading] = useState(true);
+  const [cameraData, setCameraData] = useState([]); // State to store the camera data from the API
+  const [radius, setRadius] = useState(1000); // State to store selected radius in meters
 
-  // Function to fetch camera data based on location
-  const fetchCameraData = async (lat, lng) => {
-    const params = {
-      latitude: lat,
-      longitude: lng,
-      radius_meters: 1000, // Set the desired radius
-      status_filter: "working", // Can be "working", "not working" or "null"
-      ownership_filter: "Govt", // Can be "Private", "Govt" or "null"
-    };
-
+  // Function to fetch camera data
+  const fetchCameraData = async (lat, lng, radiusMeters) => {
     try {
-      const response = await fetch('YOUR_API_ENDPOINT', { // Replace with your actual API endpoint
+      const response = await fetch('http://10.70.13.203:8080/nearby_cameras', { // Replace with your actual API endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(params),
+        body: JSON.stringify({
+          latitude: lat,
+          longitude: lng,
+          radius_meters: radiusMeters, // Use the provided radius
+          status_filter: '', // Example filter
+          ownership_filter: '', // Example filter
+        }),
       });
 
       if (!response.ok) {
@@ -35,75 +200,167 @@ const MapsGoogle = () => {
       }
 
       const data = await response.json();
-      setLocationData(data); // Set the camera data
+      setCameraData(data); // Save the response to state
     } catch (error) {
       console.error('Error fetching camera data:', error);
     }
   };
 
+  // Get current position
   useEffect(() => {
-    // Function to get the current location of the user
-    const getCurrentLocation = () => {
-      if (navigator.geolocation) {
-        const id = navigator.geolocation.watchPosition(
-          (position) => {
-            const { latitude, longitude } = position.coords;
-            setCenter({ lat: latitude, lng: longitude }); // Set center to current location
-            fetchCameraData(latitude, longitude); // Fetch camera data based on current location
-          },
-          (error) => {
-            console.error('Error getting current location:', error);
-            // Optionally handle error case
-          },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 5000 } // High accuracy and no cache
-        );
-        setWatchId(id); // Save the watch ID
-      } else {
-        console.error('Geolocation is not supported by this browser.');
-        // Optionally set default center or handle error case
-      }
-    };
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setPosition({ lat: latitude, lng: longitude });
+          setLoading(false);
 
-    getCurrentLocation(); // Call the function to get current location
+          // Fetch camera data once we have the current position with the default radius
+          fetchCameraData(latitude, longitude, radius);
+        },
+        (error) => {
+          console.error('Error getting current location:', error);
+          setLoading(false);
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser.');
+      setLoading(false);
+    }
+  }, []);
 
-    // Cleanup function to stop watching position on unmount
-    return () => {
-      if (watchId) {
-        navigator.geolocation.clearWatch(watchId);
-      }
-    };
-  }, [watchId]); // Include watchId in dependencies to handle cleanup properly
+  // Handle radius change when the filter buttons are clicked
+  const handleRadiusChange = (newRadius) => {
+    setRadius(newRadius); // Update the radius state
+    // console.log(radius)
+    // return
+    fetchCameraData(position.lat, position.lng, newRadius); // Fetch the data with the new radius
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div className="flex flex-1 flex-col overflow-hidden">
-      {/* Dashboard content */}
-      <main className="flex-1 overflow-y-auto bg-gray-100 p-0">
-        <LoadScript googleMapsApiKey="AIzaSyBN7WeAsX5Ya5BvLY_4AKQFklaDSBIPylU"> {/* Replace with your actual API key */}
-          <GoogleMap
-            mapContainerStyle={mapContainerStyle}
-            center={center}
-            zoom={15} // Adjust zoom level as necessary
+    <APIProvider apiKey='AIzaSyBN7WeAsX5Ya5BvLY_4AKQFklaDSBIPylU'>
+      {/* <div className=" top-4 left-4 z-10 flex space-x-2 pb-5">
+        <Button
+          className="px-4 py-2text-white rounded"
+          onClick={() => handleRadiusChange(500)}
+        >
+          500m
+        </Button>
+        <Button
+          className="px-4 py-2 text-white rounded"
+          onClick={() => handleRadiusChange(1000)}
+        >
+          1000m
+        </Button>
+        <Button
+          className="px-4 py-2 text-white rounded"
+          onClick={() => handleRadiusChange(2000)}
+        >
+          2000m
+        </Button>
+        <Button
+          className="px-4 py-2 text-white rounded"
+          onClick={() => handleRadiusChange(5000)}
+        >
+          5000m
+        </Button>
+      </div> */}
+      
+        <div className="flex justify-center gap-4 pb-4">
+          <Button
+            className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
+            variant={radius === 500 ? 'default' : 'outline'} // Highlight the selected button
+            onClick={() => handleRadiusChange(500)}
           >
-            {/* Marker for the user's current location */}
-            <Marker 
-              position={center} 
-              icon={{
-                url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", // Customize your current location marker icon
-              }}
-              title="Your Current Location" // Tooltip for the marker
-            />
-            {/* Markers for fetched camera data */}
-            {locationData.map((camera, index) => (
-              <Marker 
-                key={index} 
-                position={{ lat: camera.latitude, lng: camera.longitude }} 
-                title={camera.description || "Camera"} // Optionally use camera description as title
-              />
-            ))}
-          </GoogleMap>
-        </LoadScript>
-      </main>
-    </div>
+            500m
+          </Button>
+          <Button
+            className={`px-4 py-2 ${radius === 1000 ? ' text-white' : ''}`}
+            variant={radius === 1000 ? 'default' : 'outline'}
+            onClick={() => handleRadiusChange(1000)}
+          >
+            1000m
+          </Button>
+          <Button
+            className={`px-4 py-2 ${radius === 2000 ? ' text-white' : ''}`}
+            variant={radius === 2000 ? 'default' : 'outline'}
+            onClick={() => handleRadiusChange(2000)}
+          >
+            2000m
+          </Button>
+          <Button
+            className={`px-4 py-2 ${radius === 5000 ? ' text-white' : ''}`}
+            variant={radius === 5000 ? 'default' : 'outline'}
+            onClick={() => handleRadiusChange(5000)}
+          >
+            5000m
+          </Button>
+        </div>
+
+      <div className="h-[70vh]">
+
+        {/* Filter Buttons */}
+
+        {/* Google Map */}
+        <Map
+          defaultZoom={15}
+          defaultCenter={position}
+          mapId='492a1f563fd9d924'
+        >
+          {/* Marker for the user's current position */}
+          <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
+            <Pin background={'#22C55E'} borderColor={'#065F46'} glyphColor={'#FFFFFF'} />
+          </AdvancedMarker>
+
+          {/* InfoWindow for the user's current location */}
+          {openInfoWindowIndex === 'user' &&
+            <InfoWindow position={position} onCloseClick={() => setOpenInfoWindowIndex(null)}>
+              <p>Your current location</p>
+            </InfoWindow>
+          }
+
+          {/* Create a marker for each camera in the cameraData */}
+          {cameraData.map((camera, index) => (
+            <AdvancedMarker
+              key={index}
+              position={{ lat: Number(camera.latitude), lng: Number(camera.longitude) }} // Camera location
+              onClick={() => setOpenInfoWindowIndex(index)} // Open InfoWindow when marker is clicked
+            >
+              <Pin background={'#FF5722'} borderColor={'#BF360C'} glyphColor={'#FFFFFF'} />
+            </AdvancedMarker>
+          ))}
+
+          {/* InfoWindows for each camera */}
+          {cameraData.map((camera, index) => (
+            openInfoWindowIndex === index && (
+              <InfoWindow
+                key={index}
+                position={{ lat: Number(camera.latitude), lng: Number(camera.longitude) }}
+                onCloseClick={() => setOpenInfoWindowIndex(null)}
+              >
+                <div>
+                  <p className='text-[16px]'><strong>Location:</strong> {camera.location || 'No location available'}</p>
+                  <p className='text-[16px]'><strong>Owner:</strong> {camera.owner_name || 'No owner available'}</p>
+                  <p className='text-[16px]'><strong>Type:</strong> {camera.private_govt || 'No type available'}</p>
+                  <p className='text-[16px]'><strong>Contact No:</strong> {camera.contact_no || 'No contact no. available'}</p>
+                  <p className='text-[16px]'><strong>Coverage:</strong> {camera.coverage || 'No coverage available'}</p>
+                  <p className='text-[16px]'><strong>Backup:</strong> {camera.backup || 'No backup available'}</p>
+                  <p className='text-[16px]'><strong>Status:</strong> {camera.status || 'Unknown'}</p>
+                  <p className='text-[16px]'><strong>Ownership:</strong> {camera.ownership || 'Unknown'}</p>
+                </div>
+              </InfoWindow>
+            )
+          ))}
+
+          <ZoomControl />
+        </Map>
+      </div>
+    </APIProvider>
   );
 };
 
