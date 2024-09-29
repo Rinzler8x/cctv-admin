@@ -96,6 +96,30 @@ function UserInputRadioButton({ label, option1, option2, value, setFunction }) {
     );
 }
 
+async function handleFileUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const response = await fetch('http://10.70.13.203:8080/upload_camera_data', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (response.ok) {
+            console.log('File uploaded successfully');
+        } else {
+            console.error('File upload failed');
+        }
+    } catch (error) {
+        console.error('Error uploading file:', error);
+    }
+};
+
+
 const Home = () => {
     const [cameraLocation, setCameraLocation] = useState("");
     const [cameraPrivateGovt, setCameraPrivateGovt] = useState("");
@@ -179,6 +203,19 @@ const Home = () => {
                                     >
                                         Save changes
                                     </Button>
+                                    <input
+                                        type="file"
+                                        accept=".xlsx, .xls"
+                                        id="file-upload"
+                                        style={{ display: 'none' }} // Hidden input field
+                                        onChange={handleFileUpload} // Function to handle file change
+                                    />
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => document.getElementById('file-upload').click()} // Trigger the hidden input click
+                                    >
+                                        Upload Excel
+                                    </Button>
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
@@ -205,7 +242,7 @@ const Home = () => {
 
                 {/* Dashboard content */}
                 < main className="flex-1 overflow-y-auto bg-gray-100 p-6" >
-                <MapsGoogle />
+                    <MapsGoogle />
                 </main >
             </div >
         </div >
