@@ -110,7 +110,7 @@ const Tickets = () => {
                                 <span className="sr-only">Go back</span>
                             </Link>
                         </Button>
-                        <h1 className="text-xl font-semibold ml-4">Dashboard</h1>
+                        <h1 className="text-xl font-semibold ml-4">Tickets</h1>
                     </div>
                 </div>
                 {/* Cards grid */}
