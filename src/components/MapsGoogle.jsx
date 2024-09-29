@@ -95,7 +95,7 @@ const MapsGoogle = () => {
   }
 
   return (
-    <APIProvider apiKey='AIzaSyBN7WeAsX5Ya5BvLY_4AKQFklaDSBIPylU'>      
+    <APIProvider apiKey='YOUR_API_KEY'>      
         <div className="flex justify-center gap-4 pb-4">
           <Button
             className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
@@ -131,7 +131,7 @@ const MapsGoogle = () => {
         <Map
           defaultZoom={15}
           defaultCenter={position}
-          mapId='492a1f563fd9d924'
+          mapId='YOUR_MAP_ID'
         >
           {/* Marker for the user's current position */}
           <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
