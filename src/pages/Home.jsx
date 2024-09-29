@@ -1,13 +1,3 @@
-// import { Button } from "@/components/ui/button"
-
-// const Home = () => {
-//     return(
-//         <>
-
-//         </>
-//     )
-// }
-
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { CameraIcon, MenuIcon, Ticket, TicketIcon } from "lucide-react"
