@@ -24,6 +24,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Link } from "react-router-dom"
+import MapsGoogle from "@/components/MapsGoogle"
 
 async function handleCreateCamera({ cameraLocation, cameraPrivateGovt, cameraOwner, cameraContactNo, cameraLatitude, cameraLongitude, cameraCoverage, cameraBackup, cameraConnected, cameraStatus, setIsCreateDialogOpen }) {
     const jsonData = {
@@ -204,7 +205,7 @@ const Home = () => {
 
                 {/* Dashboard content */}
                 < main className="flex-1 overflow-y-auto bg-gray-100 p-6" >
-
+                <MapsGoogle />
                 </main >
             </div >
         </div >
