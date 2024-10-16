@@ -1,10 +1,9 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { CameraIcon, MenuIcon, Ticket, TicketIcon } from "lucide-react"
+import { CameraIcon, MenuIcon, TicketIcon, ArrowLeftIcon } from "lucide-react"
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogFooter,
     DialogHeader,
     DialogTitle,
@@ -46,43 +45,38 @@ async function handleCreateCamera({ cameraLocation, cameraPrivateGovt, cameraOwn
     } catch (error) {
         console.error("Failed to create camera:", error);
     }
-    // handleClear({ cameraLocation, cameraPrivateGovt, cameraOwner, cameraContactNo, cameraLatitude, cameraLongitude, cameraCoverage, cameraBackup, cameraConnected, cameraStatus });
 }
 
 function UserInputField({ label, value, setFunction }) {
     return (
-        <>
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                    {label}
-                </Label>
-                <Input id="name" value={value} onChange={(e) => { setFunction(e.target.value); console.log(value) }} className="col-span-3" />
-            </div>
-        </>
+        <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+                {label}
+            </Label>
+            <Input id="name" value={value} onChange={(e) => setFunction(e.target.value)} className="col-span-3" />
+        </div>
     )
 }
 
 function UserInputRadioButton({ label, option1, option2, value, setFunction }) {
     return (
-        <>
-            <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                    {label}
-                </Label>
-                <RadioGroup value={value} onValueChange={setFunction}>
-                    <div className="flex items-center space-x-8">
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value={option1} id="option-one" />
-                            <Label htmlFor="option-one">{option1}</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value={option2} id="option-two" />
-                            <Label htmlFor="option-two">{option2}</Label>
-                        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">
+                {label}
+            </Label>
+            <RadioGroup value={value} onValueChange={setFunction}>
+                <div className="flex items-center space-x-8">
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={option1} id="option-one" />
+                        <Label htmlFor="option-one">{option1}</Label>
                     </div>
-                </RadioGroup>
-            </div>
-        </>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value={option2} id="option-two" />
+                        <Label htmlFor="option-two">{option2}</Label>
+                    </div>
+                </div>
+            </RadioGroup>
+        </div>
     );
 }
 
@@ -107,8 +101,7 @@ async function handleFileUpload(event) {
     } catch (error) {
         console.error('Error uploading file:', error);
     }
-};
-
+}
 
 const Home = () => {
     const [cameraLocation, setCameraLocation] = useState("");
@@ -121,7 +114,8 @@ const Home = () => {
     const [cameraBackup, setCameraBackup] = useState("");
     const [cameraConnected, setCameraConnected] = useState("");
     const [cameraStatus, setCameraStatus] = useState("");
-    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+    const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false); // State to control sidebar visibility
 
     function handleClear() {
         setCameraLocation("");
@@ -139,10 +133,25 @@ const Home = () => {
     return (
         <div className="flex h-screen overflow-hidden">
             {/* Sidebar */}
-            <aside className="hidden w-64 overflow-y-auto bg-slate-300 md:block text-black">
+            <aside
+                className={`${
+                    isSidebarOpen ? 'fixed inset-0 z-40' : 'hidden md:block md:relative'
+                } md:w-64 bg-slate-200 overflow-y-auto text-black`}
+            >
                 <div className="flex h-full flex-col">
-                    <div className="flex h-16 items-center justify-center">
-                        <span className="text-2xl font-bold text-black">SurveilMap</span>
+                    <div className="flex h-16 items-center justify-center md:justify-start md:px-4">
+                        {/* Back button for mobile */}
+                        {isSidebarOpen && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="md:hidden"
+                                onClick={() => setIsSidebarOpen(false)}
+                            >
+                                <ArrowLeftIcon className="h-6 w-6" />
+                            </Button>
+                        )}
+                        <span className="text-2xl font-bold text-black ml-2 lg:mx-auto">SurveilMap</span>
                     </div>
                     <nav className="flex-1 px-2 py-4">
                         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -185,11 +194,9 @@ const Home = () => {
                                                     cameraStatus,
                                                     setIsCreateDialogOpen
                                                 }
-                                            )
-                                                ;
+                                            );
                                             handleClear()
-                                        }
-                                        }
+                                        }}
                                     >
                                         Save changes
                                     </Button>
@@ -197,12 +204,13 @@ const Home = () => {
                                         type="file"
                                         accept=".xlsx, .xls"
                                         id="file-upload"
-                                        style={{ display: 'none' }} // Hidden input field
-                                        onChange={handleFileUpload} // Function to handle file change
+                                        style={{ display: 'none' }}
+                                        onChange={handleFileUpload}
                                     />
                                     <Button
                                         variant="outline"
-                                        onClick={() => document.getElementById('file-upload').click()} // Trigger the hidden input click
+                                        onClick={() => document.getElementById('file-upload').click()}
+                                        className="mb-2 lg:md-0"
                                     >
                                         Upload Excel
                                     </Button>
@@ -216,26 +224,31 @@ const Home = () => {
                         </Link>
                     </nav>
                 </div>
-            </aside >
+            </aside>
 
-            {/* Main Content */}
-            < div className="flex flex-1 flex-col overflow-hidden" >
-                {/* Top bar */}
-                < header className="flex h-16 items-center justify-start border-b bg-white px-6" >
-                    <Button variant="ghost" size="icon" className="md:hidden pr-4">
+            {/* Main content */}
+            <div className="flex flex-1 flex-col overflow-hidden">
+                {/* Header */}
+                <header className="flex items-center justify-between bg-slate-100 px-6 py-4 shadow">
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="md:hidden"
+                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                    >
                         <MenuIcon className="h-6 w-6" />
                     </Button>
-                    <div className="flex justify-center align-bottom pt-5">
-                        <h1 className="text-3xl font-semibold text-gray-800 mb-6">Dashboard</h1>
-                    </div>
-                </header >
+                    <h1 className="text-xl font-bold text-center w-full lg:text-left">Dashboard</h1>
+                </header>
 
-                {/* Dashboard content */}
-                < main className="flex-1 overflow-y-auto bg-gray-100 p-6" >
+                {/* Google Maps Integration */}
+                <div className="flex-1 overflow-hidden bg-white p-6">
                     <MapsGoogle />
-                </main >
-            </div >
-        </div >
-    )
-}
-export default Home
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Home;
+
