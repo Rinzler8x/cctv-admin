@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import { Button } from "@/components/ui/button";
+import "dotenv"
 
 const ZoomControl = () => {
   const map = useMap();
@@ -33,7 +34,7 @@ const MapsGoogle = () => {
   // Function to fetch camera data
   const fetchCameraData = async (lat, lng, radiusMeters) => {
     try {
-      const response = await fetch('http://10.70.13.203:8080/nearby_cameras', { // Replace with your actual API endpoint
+      const response = await fetch('http://127.0.0.1:8000/nearby_cameras', { // Replace with your actual API endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +96,7 @@ const MapsGoogle = () => {
   }
 
   return (
-    <APIProvider apiKey='YOUR_API_KEY'>      
+    <APIProvider apiKey="AIzaSyBN7WeAsX5Ya5BvLY_4AKQFklaDSBIPylU">      
         <div className="flex justify-center gap-4 pb-4">
           <Button
             className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
@@ -131,7 +132,7 @@ const MapsGoogle = () => {
         <Map
           defaultZoom={15}
           defaultCenter={position}
-          mapId='YOUR_MAP_ID'
+          mapId="492a1f563fd9d924"
         >
           {/* Marker for the user's current position */}
           <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>

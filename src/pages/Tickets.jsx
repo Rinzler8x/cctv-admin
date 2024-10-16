@@ -33,7 +33,7 @@ const Tickets = () => {
 
     async function fetchTickets() {
         try {
-            const response = await fetch('http://10.70.13.203:8080/tickets'); // Replace with your API endpoint
+            const response = await fetch('http://127.0.0.1:8000/tickets'); // Replace with your API endpoint
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
@@ -41,15 +41,16 @@ const Tickets = () => {
             setTickets(data);
         } catch (error) {
             setError(error.message);
-        } finally {
-            setLoading(false);
-        }
+        } 
+        // finally {
+        //     setLoading(false);
+        // }
     }
 
     const handleCardClick = async (ticket_camera_id, ticket_id) => {
         // Fetch details for the selected ticket from another API using ticket.camera_id
         try {
-            const response = await fetch(`http://10.70.13.203:8080/cameras/${ticket_camera_id}`); // Replace with your details API endpoint
+            const response = await fetch(`http://127.0.0.1:8000/cameras/${ticket_camera_id}`); // Replace with your details API endpoint
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             const updatedData = {

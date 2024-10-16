@@ -31,7 +31,7 @@ async function handleCreateCamera({ cameraLocation, cameraPrivateGovt, cameraOwn
     };
     console.log(jsonData)
     try {
-        const response = await fetch("http://10.70.13.203:8080/cameras", {
+        const response = await fetch("http://127.0.0.1:8000/cameras", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -94,7 +94,7 @@ async function handleFileUpload(event) {
     formData.append('file', file);
 
     try {
-        const response = await fetch('http://10.70.13.203:8080/upload_camera_data', {
+        const response = await fetch('http://127.0.0.1:8000/upload_camera_data', {
             method: 'POST',
             body: formData,
         });
@@ -139,15 +139,15 @@ const Home = () => {
     return (
         <div className="flex h-screen overflow-hidden">
             {/* Sidebar */}
-            <aside className="hidden w-64 overflow-y-auto bg-gray-800 md:block">
+            <aside className="hidden w-64 overflow-y-auto bg-slate-300 md:block text-black">
                 <div className="flex h-full flex-col">
                     <div className="flex h-16 items-center justify-center">
-                        <span className="text-2xl font-bold text-white">SurveilMap</span>
+                        <span className="text-2xl font-bold text-black">SurveilMap</span>
                     </div>
                     <nav className="flex-1 px-2 py-4">
                         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                             <DialogTrigger asChild>
-                                <Button variant='outlined' className="w-full bg-back border-2 text-white">
+                                <Button variant='outlined' className="w-full bg-back border-2 border-black text-lg">
                                     <CameraIcon className="mr-2 h-4 w-4" /> Create Camera
                                 </Button>
                             </DialogTrigger>
@@ -210,7 +210,7 @@ const Home = () => {
                             </DialogContent>
                         </Dialog>
                         <Link to={'/tickets'}>
-                            <Button variant='outlined' className="w-full bg-back border-2 text-white mt-2">
+                            <Button variant='outlined' className="w-full bg-back border-2 border-black mt-2 text-lg">
                                 <TicketIcon className="mr-2 h-4 w-4" /> Tickets
                             </Button>
                         </Link>
