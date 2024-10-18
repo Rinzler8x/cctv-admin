@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import { Button } from "@/components/ui/button";
-import ApiKeys from 'env';
+import ApiKeys from "../../env";
 
 const ZoomControl = () => {
   const map = useMap();
@@ -129,14 +129,14 @@ const MapsGoogle = () => {
             5000m
           </Button>
         </div>
-    <APIProvider apiKey={apiKey}>      
-      <div className="h-[70vh]">
+    <APIProvider apiKey="">      
+      <div className="h-[50vh] lg:h-[80vh]">
 
         <Map
           defaultZoom={15}
           defaultCenter={position}
-          mapId={mapId}
-
+          mapId=""
+          
         >
           {/* Marker for the user's current position */}
           <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
@@ -181,7 +181,6 @@ const MapsGoogle = () => {
               </InfoWindow>
             )
           ))}
-
           <ZoomControl />
         </Map>
       </div>
