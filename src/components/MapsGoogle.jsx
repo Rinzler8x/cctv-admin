@@ -26,17 +26,16 @@ const ZoomControl = () => {
 
 const MapsGoogle = () => {
   const [position, setPosition] = useState({ lat: 53.54, lng: 10 });
-  const [openInfoWindowIndex, setOpenInfoWindowIndex] = useState(null); // Track which InfoWindow is open
+  const [openInfoWindowIndex, setOpenInfoWindowIndex] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [cameraData, setCameraData] = useState([]); // State to store the camera data from the API
-  const [radius, setRadius] = useState(1000); // State to store selected radius in meters
+  const [cameraData, setCameraData] = useState([]);
+  const [radius, setRadius] = useState(1000);
   const apiKey = ApiKeys.find(api => api.key === "API_KEY")?.value;
   const mapId = ApiKeys.find(api => api.key === "MAP_ID")?.value;
 
-  // Function to fetch camera data
   const fetchCameraData = async (lat, lng, radiusMeters) => {
     try {
-      const response = await fetch('http://127.0.0.1:8000/nearby_cameras', { // Replace with your actual API endpoint
+      const response = await fetch('http://127.0.0.1:8000/nearby_cameras', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,9 +43,9 @@ const MapsGoogle = () => {
         body: JSON.stringify({
           latitude: lat,
           longitude: lng,
-          radius_meters: radiusMeters, // Use the provided radius
-          status_filter: '', // Example filter
-          ownership_filter: '', // Example filter
+          radius_meters: radiusMeters,
+          status_filter: '',
+          ownership_filter: '',
         }),
       });
 
@@ -55,13 +54,12 @@ const MapsGoogle = () => {
       }
 
       const data = await response.json();
-      setCameraData(data); // Save the response to state
+      setCameraData(data);
     } catch (error) {
       console.error('Error fetching camera data:', error);
     }
   };
 
-  // Get current position
   useEffect(() => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -69,8 +67,6 @@ const MapsGoogle = () => {
           const { latitude, longitude } = position.coords;
           setPosition({ lat: latitude, lng: longitude });
           setLoading(false);
-
-          // Fetch camera data once we have the current position with the default radius
           fetchCameraData(latitude, longitude, radius);
         },
         (error) => {
@@ -85,13 +81,45 @@ const MapsGoogle = () => {
     }
   }, []);
 
-  // Handle radius change when the filter buttons are clicked
   const handleRadiusChange = (newRadius) => {
-    setRadius(newRadius); // Update the radius state
-    // console.log(radius)
-    // return
-    fetchCameraData(position.lat, position.lng, newRadius); // Fetch the data with the new radius
+    setRadius(newRadius);
+    fetchCameraData(position.lat, position.lng, newRadius);
   };
+
+  // Ref to hold the circle
+  const mapRef = React.useRef();
+
+  // Create a circle on the map when the position or radius changes
+  useEffect(() => {
+    if (!mapRef.current) return; // Ensure the map is available
+
+    const map = mapRef.current;
+
+    // Clear existing circle
+    if (map.circle) {
+      map.circle.setMap(null);
+    }
+
+    // Create a new circle
+    const newCircle = new google.maps.Circle({
+      strokeColor: 'rgba(255, 0, 0, 0.8)',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: 'rgba(255, 0, 0, 0.2)',
+      fillOpacity: 0.35,
+      map,
+      center: position,
+      radius: radius,
+    });
+
+    // Attach the circle to the map reference for cleanup
+    map.circle = newCircle;
+
+    // Cleanup the circle when the component unmounts or when dependencies change
+    return () => {
+      newCircle.setMap(null);
+    };
+  }, [position, radius]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -99,92 +127,88 @@ const MapsGoogle = () => {
 
   return (
     <>
-    <div className="flex justify-center gap-4 pb-4 pt-4">
-          <Button
-            className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
-            variant={radius === 500 ? 'default' : 'outline'} // Highlight the selected button
-            onClick={() => handleRadiusChange(500)}
-          >
-            500m
-          </Button>
-          <Button
-            className={`px-4 py-2 ${radius === 1000 ? ' text-white' : ''}`}
-            variant={radius === 1000 ? 'default' : 'outline'}
-            onClick={() => handleRadiusChange(1000)}
-          >
-            1000m
-          </Button>
-          <Button
-            className={`px-4 py-2 ${radius === 2000 ? ' text-white' : ''}`}
-            variant={radius === 2000 ? 'default' : 'outline'}
-            onClick={() => handleRadiusChange(2000)}
-          >
-            2000m
-          </Button>
-          <Button
-            className={`px-4 py-2 ${radius === 5000 ? ' text-white' : ''}`}
-            variant={radius === 5000 ? 'default' : 'outline'}
-            onClick={() => handleRadiusChange(5000)}
-          >
-            5000m
-          </Button>
-        </div>
-    <APIProvider apiKey="">      
-      <div className="h-[50vh] lg:h-[80vh]">
-
-        <Map
-          defaultZoom={15}
-          defaultCenter={position}
-          mapId=""
-          
+      <div className="flex justify-center gap-4 pb-4 pt-4">
+        <Button
+          className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
+          variant={radius === 500 ? 'default' : 'outline'}
+          onClick={() => handleRadiusChange(500)}
         >
-          {/* Marker for the user's current position */}
-          <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
-            <Pin background={'#22C55E'} borderColor={'#065F46'} glyphColor={'#FFFFFF'} />
-          </AdvancedMarker>
-
-          {/* InfoWindow for the user's current location */}
-          {openInfoWindowIndex === 'user' &&
-            <InfoWindow position={position} onCloseClick={() => setOpenInfoWindowIndex(null)}>
-              <p>Your current location</p>
-            </InfoWindow>
-          }
-
-          {cameraData.map((camera, index) => (
-            <AdvancedMarker
-              key={index}
-              position={{ lat: Number(camera.latitude), lng: Number(camera.longitude) }} // Camera location
-              onClick={() => setOpenInfoWindowIndex(index)} // Open InfoWindow when marker is clicked
-            >
-              <Pin background={'#FF5722'} borderColor={'#BF360C'} glyphColor={'#FFFFFF'} />
+          500m
+        </Button>
+        <Button
+          className={`px-4 py-2 ${radius === 1000 ? ' text-white' : ''}`}
+          variant={radius === 1000 ? 'default' : 'outline'}
+          onClick={() => handleRadiusChange(1000)}
+        >
+          1000m
+        </Button>
+        <Button
+          className={`px-4 py-2 ${radius === 2000 ? ' text-white' : ''}`}
+          variant={radius === 2000 ? 'default' : 'outline'}
+          onClick={() => handleRadiusChange(2000)}
+        >
+          2000m
+        </Button>
+        <Button
+          className={`px-4 py-2 ${radius === 5000 ? ' text-white' : ''}`}
+          variant={radius === 5000 ? 'default' : 'outline'}
+          onClick={() => handleRadiusChange(5000)}
+        >
+          5000m
+        </Button>
+      </div>
+      <APIProvider apiKey={apiKey}>
+        <div className="h-[50vh] lg:h-[70vh] relative">
+          <Map
+            defaultZoom={15}
+            defaultCenter={position}
+            mapId={mapId}
+            onMapLoad={(map) => { mapRef.current = map }} // Capture the map instance
+          >
+            <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
+              <Pin background={'#22C55E'} borderColor={'#065F46'} glyphColor={'#FFFFFF'} />
             </AdvancedMarker>
-          ))}
 
-          {/* InfoWindows for each camera */}
-          {cameraData.map((camera, index) => (
-            openInfoWindowIndex === index && (
-              <InfoWindow
+            {openInfoWindowIndex === 'user' && (
+              <InfoWindow position={position} onCloseClick={() => setOpenInfoWindowIndex(null)}>
+                <p>Your current location</p>
+              </InfoWindow>
+            )}
+
+            {cameraData.map((camera, index) => (
+              <AdvancedMarker
                 key={index}
                 position={{ lat: Number(camera.latitude), lng: Number(camera.longitude) }}
-                onCloseClick={() => setOpenInfoWindowIndex(null)}
+                onClick={() => setOpenInfoWindowIndex(index)}
               >
-                <div>
-                  <p className='text-[16px]'><strong>Location:</strong> {camera.location || 'No location available'}</p>
-                  <p className='text-[16px]'><strong>Owner:</strong> {camera.owner_name || 'No owner available'}</p>
-                  <p className='text-[16px]'><strong>Type:</strong> {camera.private_govt || 'No type available'}</p>
-                  <p className='text-[16px]'><strong>Contact No:</strong> {camera.contact_no || 'No contact no. available'}</p>
-                  <p className='text-[16px]'><strong>Coverage:</strong> {camera.coverage || 'No coverage available'}</p>
-                  <p className='text-[16px]'><strong>Backup:</strong> {camera.backup || 'No backup available'}</p>
-                  <p className='text-[16px]'><strong>Status:</strong> {camera.status || 'Unknown'}</p>
-                  <p className='text-[16px]'><strong>Ownership:</strong> {camera.ownership || 'Unknown'}</p>
-                </div>
-              </InfoWindow>
-            )
-          ))}
-          <ZoomControl />
-        </Map>
-      </div>
-    </APIProvider>
+                <Pin background={'#FF5722'} borderColor={'#BF360C'} glyphColor={'#FFFFFF'} />
+              </AdvancedMarker>
+            ))}
+
+            {cameraData.map((camera, index) => (
+              openInfoWindowIndex === index && (
+                <InfoWindow
+                  key={index}
+                  position={{ lat: Number(camera.latitude), lng: Number(camera.longitude) }}
+                  onCloseClick={() => setOpenInfoWindowIndex(null)}
+                >
+                  <div>
+                    <p className='text-[16px]'><strong>Location:</strong> {camera.location || 'No location available'}</p>
+                    <p className='text-[16px]'><strong>Owner:</strong> {camera.owner_name || 'No owner available'}</p>
+                    <p className='text-[16px]'><strong>Type:</strong> {camera.private_govt || 'No type available'}</p>
+                    <p className='text-[16px]'><strong>Contact No:</strong> {camera.contact_no || 'No contact no. available'}</p>
+                    <p className='text-[16px]'><strong>Coverage:</strong> {camera.coverage || 'No coverage available'}</p>
+                    <p className='text-[16px]'><strong>Backup:</strong> {camera.backup || 'No backup available'}</p>
+                    <p className='text-[16px]'><strong>Status:</strong> {camera.status || 'Unknown'}</p>
+                    <p className='text-[16px]'><strong>Ownership:</strong> {camera.ownership || 'Unknown'}</p>
+                  </div>
+                </InfoWindow>
+              )
+            ))}
+            <ZoomControl />
+          </Map>
+        </div>
+      </APIProvider>
     </>
   );
 };
