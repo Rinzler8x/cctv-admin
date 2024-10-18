@@ -311,23 +311,20 @@ const Home = () => {
           >
             <MenuIcon className="h-6 w-6" />
           </Button>
-          <h1 className="text-xl font-bold text-center w-full lg:text-left">
-            Dashboard
+          <h1 className="text-2xl font-bold text-center w-full lg:text-left">
+            CCTV Dashboard
           </h1>
         </header>
 
         {/* Main content with 60:40 ratio */}
         <div className="flex flex-grow p-4 bg-white h-screen overflow-hidden">
           {" "}
-          {/* Parent container height and overflow control */}
-          {/* Google Maps Integration (60% width) */}
           <div className="w-3/5 pr-2">
             {" "}
             {/* Ensure child takes full height */}
             <Card className="pt-4 hover:shadow-lg">
               <CardContent className="h-full">
                 {" "}
-                {/* Ensure the map content takes full height */}
                 <MapsGoogle />
               </CardContent>
             </Card>
@@ -336,10 +333,10 @@ const Home = () => {
           <div className="w-2/5 pl-2 h-full">
             {" "}
             {/* Ensure child takes full height */}
+            
             <Card className="pt-4 hover:shadow-lg h-full">
               <CardContent className="h-full overflow-y-auto max-h-full">
                 {" "}
-                {/* Ensure tickets content is scrollable */}
                 <Tickets />
               </CardContent>
             </Card>
