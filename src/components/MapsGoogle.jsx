@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import { Button } from "@/components/ui/button";
+import { Navigation2 } from 'lucide-react';
 import ApiKeys from "../../env";
 
 const ZoomControl = () => {
   const map = useMap();
-  const [zoom, setZoom] = useState(map.getZoom());
+  const [zoom, setZoom] = useState(12);
 
   useEffect(() => {
+    if (!map) return;
+
     const listener = map.addListener('zoom_changed', () => {
       setZoom(map.getZoom());
     });
 
     return () => {
-      google.maps.event.removeListener(listener);
+      if (listener) google.maps.event.removeListener(listener);
     };
   }, [map]);
 
@@ -25,14 +28,17 @@ const ZoomControl = () => {
 };
 
 const MapsGoogle = () => {
-  const [position, setPosition] = useState({ lat: 53.54, lng: 10 });
+  // Initialize with a default position (will be updated with actual location)
+  const [position, setPosition] = useState(null);
   const [pinPosition, setPinPosition] = useState(null);
   const [openInfoWindowIndex, setOpenInfoWindowIndex] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cameraData, setCameraData] = useState([]);
   const [radius, setRadius] = useState(1000);
+  const [isLocating, setIsLocating] = useState(false);
+  const [error, setError] = useState(null);
+  
   const apiKey = ApiKeys.find(api => api.key === "API_KEY")?.value;
-  const mapIdV = ApiKeys.find(api => api.key === "MAP_ID_V")?.value;
   const mapIdR = ApiKeys.find(api => api.key === "MAP_ID_R")?.value;
 
   const fetchCameraData = async (lat, lng, radiusMeters) => {
@@ -59,56 +65,92 @@ const MapsGoogle = () => {
       setCameraData(data);
     } catch (error) {
       console.error('Error fetching camera data:', error);
+      setError('Failed to fetch camera data');
     }
   };
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setPosition({ lat: latitude, lng: longitude });
-          setLoading(false);
-          fetchCameraData(latitude, longitude, radius);
-        },
-        (error) => {
-          console.error('Error getting current location:', error);
-          setLoading(false);
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
-    } else {
-      console.error('Geolocation is not supported by this browser.');
+  const getCurrentLocation = useCallback(() => {
+    setIsLocating(true);
+    setError(null);
+
+    if (!navigator.geolocation) {
+      setError('Geolocation is not supported by your browser');
+      setIsLocating(false);
       setLoading(false);
+      return;
     }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const newPosition = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        
+        console.log('Current position:', newPosition); // Debug log
+        
+        setPosition(newPosition);
+        setPinPosition(null); // Clear any dropped pins
+        setOpenInfoWindowIndex('user');
+        
+        // Fetch cameras for the new position
+        fetchCameraData(newPosition.lat, newPosition.lng, radius);
+        
+        setIsLocating(false);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Geolocation error:', error);
+        setError('Failed to get your location. Please make sure location services are enabled.');
+        setIsLocating(false);
+        setLoading(false);
+        
+        // Set a default position if geolocation fails
+        const defaultPosition = { lat: 53.54, lng: 10 };
+        setPosition(defaultPosition);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }, [radius]);
+
+  // Initialize location on component mount
+  useEffect(() => {
+    getCurrentLocation();
   }, []);
 
   const handleRadiusChange = (newRadius) => {
     setRadius(newRadius);
-    // Use pinPosition for fetching if it exists, otherwise use current position
     const searchPosition = pinPosition || position;
-    fetchCameraData(searchPosition.lat, searchPosition.lng, newRadius);
+    if (searchPosition) {
+      fetchCameraData(searchPosition.lat, searchPosition.lng, newRadius);
+    }
   };
 
   const handleMapClick = (e) => {
-    // Get the clicked coordinates
     const newPosition = {
       lat: e.detail.latLng.lat,
       lng: e.detail.latLng.lng
     };
-    
-    // Update pin position
+    console.log('Clicked position:', newPosition); // Debug log
     setPinPosition(newPosition);
-    
-    // Fetch new camera data for this location
     fetchCameraData(newPosition.lat, newPosition.lng, radius);
-    
-    // Open info window for the new pin
     setOpenInfoWindowIndex('dropped-pin');
   };
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (loading || !position) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>{isLocating ? 'Getting your location...' : 'Loading map...'}</p>
+          {error && <p className="text-red-500 mt-2">{error}</p>}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -117,7 +159,7 @@ const MapsGoogle = () => {
         <p className="text-sm text-gray-600">
           Click anywhere on the map to drop a pin and find nearby cameras
         </p>
-        <div className="flex justify-center gap-4">
+        <div className="flex justify-center gap-4 items-center flex-wrap">
           <Button
             className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
             variant={radius === 500 ? 'default' : 'outline'}
@@ -146,7 +188,17 @@ const MapsGoogle = () => {
           >
             5000m
           </Button>
+          <Button
+            variant="outline"
+            onClick={getCurrentLocation}
+            disabled={isLocating}
+            className="flex items-center gap-2"
+          >
+            <Navigation2 className={`h-4 w-4 ${isLocating ? 'animate-spin' : ''}`} />
+            {isLocating ? 'Locating...' : 'Current Location'}
+          </Button>
         </div>
+        {error && <p className="text-red-500 mt-2">{error}</p>}
       </div>
       
       <APIProvider apiKey={apiKey}>
@@ -156,6 +208,8 @@ const MapsGoogle = () => {
             defaultCenter={position}
             mapId={mapIdR}
             onClick={handleMapClick}
+            gestureHandling={'greedy'}
+            disableDefaultUI={true}
           >
             {/* Current location marker */}
             <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
@@ -172,7 +226,13 @@ const MapsGoogle = () => {
             {/* Current location info window */}
             {openInfoWindowIndex === 'user' && (
               <InfoWindow position={position} onCloseClick={() => setOpenInfoWindowIndex(null)}>
-                <p>Your current location</p>
+                <div>
+                  <p>Your current location</p>
+                  <p className="text-sm text-gray-600">
+                    Lat: {position.lat.toFixed(6)}<br />
+                    Lng: {position.lng.toFixed(6)}
+                  </p>
+                </div>
               </InfoWindow>
             )}
 
@@ -184,8 +244,10 @@ const MapsGoogle = () => {
               >
                 <div>
                   <p>Dropped Pin Location</p>
-                  <p>Lat: {pinPosition.lat.toFixed(6)}</p>
-                  <p>Lng: {pinPosition.lng.toFixed(6)}</p>
+                  <p className="text-sm text-gray-600">
+                    Lat: {pinPosition.lat.toFixed(6)}<br />
+                    Lng: {pinPosition.lng.toFixed(6)}
+                  </p>
                 </div>
               </InfoWindow>
             )}
