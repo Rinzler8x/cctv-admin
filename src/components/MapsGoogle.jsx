@@ -98,7 +98,7 @@ const MapsGoogle = () => {
   return (
     // <APIProvider apiKey="AIzaSyBN7WeAsX5Ya5BvLY_4AKQFklaDSBIPylU"> 
     <>
-    <div className="flex justify-center gap-4 pb-4">
+    <div className="flex justify-center gap-4 pb-4 pt-2">
           <Button
             className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
             variant={radius === 500 ? 'default' : 'outline'} // Highlight the selected button
@@ -129,7 +129,7 @@ const MapsGoogle = () => {
           </Button>
         </div>
     <APIProvider apiKey="">      
-      <div className="h-[70vh]">
+      <div className="h-[30vh]">
 
         <Map
           defaultZoom={15}
