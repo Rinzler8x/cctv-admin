@@ -99,7 +99,7 @@ const MapsGoogle = () => {
 
   return (
     <>
-    <div className="flex justify-center gap-4 pb-4 pt-2">
+    <div className="flex justify-center gap-4 pb-4 pt-4">
           <Button
             className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
             variant={radius === 500 ? 'default' : 'outline'} // Highlight the selected button
