@@ -26,12 +26,14 @@ const ZoomControl = () => {
 
 const MapsGoogle = () => {
   const [position, setPosition] = useState({ lat: 53.54, lng: 10 });
+  const [pinPosition, setPinPosition] = useState(null);
   const [openInfoWindowIndex, setOpenInfoWindowIndex] = useState(null);
   const [loading, setLoading] = useState(true);
   const [cameraData, setCameraData] = useState([]);
   const [radius, setRadius] = useState(1000);
   const apiKey = ApiKeys.find(api => api.key === "API_KEY")?.value;
-  const mapId = ApiKeys.find(api => api.key === "MAP_ID")?.value;
+  const mapIdV = ApiKeys.find(api => api.key === "MAP_ID_V")?.value;
+  const mapIdR = ApiKeys.find(api => api.key === "MAP_ID_R")?.value;
 
   const fetchCameraData = async (lat, lng, radiusMeters) => {
     try {
@@ -83,43 +85,27 @@ const MapsGoogle = () => {
 
   const handleRadiusChange = (newRadius) => {
     setRadius(newRadius);
-    fetchCameraData(position.lat, position.lng, newRadius);
+    // Use pinPosition for fetching if it exists, otherwise use current position
+    const searchPosition = pinPosition || position;
+    fetchCameraData(searchPosition.lat, searchPosition.lng, newRadius);
   };
 
-  // Ref to hold the circle
-  const mapRef = React.useRef();
-
-  // Create a circle on the map when the position or radius changes
-  useEffect(() => {
-    if (!mapRef.current) return; // Ensure the map is available
-
-    const map = mapRef.current;
-
-    // Clear existing circle
-    if (map.circle) {
-      map.circle.setMap(null);
-    }
-
-    // Create a new circle
-    const newCircle = new google.maps.Circle({
-      strokeColor: 'rgba(255, 0, 0, 0.8)',
-      strokeOpacity: 0.8,
-      strokeWeight: 2,
-      fillColor: 'rgba(255, 0, 0, 0.2)',
-      fillOpacity: 0.35,
-      map,
-      center: position,
-      radius: radius,
-    });
-
-    // Attach the circle to the map reference for cleanup
-    map.circle = newCircle;
-
-    // Cleanup the circle when the component unmounts or when dependencies change
-    return () => {
-      newCircle.setMap(null);
+  const handleMapClick = (e) => {
+    // Get the clicked coordinates
+    const newPosition = {
+      lat: e.detail.latLng.lat,
+      lng: e.detail.latLng.lng
     };
-  }, [position, radius]);
+    
+    // Update pin position
+    setPinPosition(newPosition);
+    
+    // Fetch new camera data for this location
+    fetchCameraData(newPosition.lat, newPosition.lng, radius);
+    
+    // Open info window for the new pin
+    setOpenInfoWindowIndex('dropped-pin');
+  };
 
   if (loading) {
     return <div>Loading...</div>;
@@ -127,54 +113,84 @@ const MapsGoogle = () => {
 
   return (
     <>
-      <div className="flex justify-center gap-4 pb-4 pt-4">
-        <Button
-          className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
-          variant={radius === 500 ? 'default' : 'outline'}
-          onClick={() => handleRadiusChange(500)}
-        >
-          500m
-        </Button>
-        <Button
-          className={`px-4 py-2 ${radius === 1000 ? ' text-white' : ''}`}
-          variant={radius === 1000 ? 'default' : 'outline'}
-          onClick={() => handleRadiusChange(1000)}
-        >
-          1000m
-        </Button>
-        <Button
-          className={`px-4 py-2 ${radius === 2000 ? ' text-white' : ''}`}
-          variant={radius === 2000 ? 'default' : 'outline'}
-          onClick={() => handleRadiusChange(2000)}
-        >
-          2000m
-        </Button>
-        <Button
-          className={`px-4 py-2 ${radius === 5000 ? ' text-white' : ''}`}
-          variant={radius === 5000 ? 'default' : 'outline'}
-          onClick={() => handleRadiusChange(5000)}
-        >
-          5000m
-        </Button>
+      <div className="flex flex-col items-center gap-4 pb-4 pt-4">
+        <p className="text-sm text-gray-600">
+          Click anywhere on the map to drop a pin and find nearby cameras
+        </p>
+        <div className="flex justify-center gap-4">
+          <Button
+            className={`px-4 py-2 ${radius === 500 ? ' text-white' : ''}`}
+            variant={radius === 500 ? 'default' : 'outline'}
+            onClick={() => handleRadiusChange(500)}
+          >
+            500m
+          </Button>
+          <Button
+            className={`px-4 py-2 ${radius === 1000 ? ' text-white' : ''}`}
+            variant={radius === 1000 ? 'default' : 'outline'}
+            onClick={() => handleRadiusChange(1000)}
+          >
+            1000m
+          </Button>
+          <Button
+            className={`px-4 py-2 ${radius === 2000 ? ' text-white' : ''}`}
+            variant={radius === 2000 ? 'default' : 'outline'}
+            onClick={() => handleRadiusChange(2000)}
+          >
+            2000m
+          </Button>
+          <Button
+            className={`px-4 py-2 ${radius === 5000 ? ' text-white' : ''}`}
+            variant={radius === 5000 ? 'default' : 'outline'}
+            onClick={() => handleRadiusChange(5000)}
+          >
+            5000m
+          </Button>
+        </div>
       </div>
+      
       <APIProvider apiKey={apiKey}>
         <div className="h-[50vh] lg:h-[70vh] relative">
           <Map
             defaultZoom={15}
             defaultCenter={position}
-            mapId={mapId}
-            onMapLoad={(map) => { mapRef.current = map }} // Capture the map instance
+            mapId={mapIdR}
+            onClick={handleMapClick}
           >
+            {/* Current location marker */}
             <AdvancedMarker position={position} onClick={() => setOpenInfoWindowIndex('user')}>
               <Pin background={'#22C55E'} borderColor={'#065F46'} glyphColor={'#FFFFFF'} />
             </AdvancedMarker>
 
+            {/* Dropped pin marker */}
+            {pinPosition && (
+              <AdvancedMarker position={pinPosition} onClick={() => setOpenInfoWindowIndex('dropped-pin')}>
+                <Pin background={'#FFCC00'} borderColor={'#BF8F00'} glyphColor={'#FFFFFF'} />
+              </AdvancedMarker>
+            )}
+
+            {/* Current location info window */}
             {openInfoWindowIndex === 'user' && (
               <InfoWindow position={position} onCloseClick={() => setOpenInfoWindowIndex(null)}>
                 <p>Your current location</p>
               </InfoWindow>
             )}
 
+            {/* Dropped pin info window */}
+            {openInfoWindowIndex === 'dropped-pin' && pinPosition && (
+              <InfoWindow
+                position={pinPosition}
+                onCloseClick={() => setOpenInfoWindowIndex(null)}
+              >
+                <div>
+                  <p>Dropped Pin Location</p>
+                  <p>Lat: {pinPosition.lat.toFixed(6)}</p>
+                  <p>Lng: {pinPosition.lng.toFixed(6)}</p>
+                </div>
+              </InfoWindow>
+            )}
+
+            {/* Camera markers */}
             {cameraData.map((camera, index) => (
               <AdvancedMarker
                 key={index}
@@ -185,6 +201,7 @@ const MapsGoogle = () => {
               </AdvancedMarker>
             ))}
 
+            {/* Camera info windows */}
             {cameraData.map((camera, index) => (
               openInfoWindowIndex === index && (
                 <InfoWindow
@@ -205,6 +222,7 @@ const MapsGoogle = () => {
                 </InfoWindow>
               )
             ))}
+
             <ZoomControl />
           </Map>
         </div>
