@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { APIProvider, Map, AdvancedMarker, Pin, InfoWindow, useMap } from '@vis.gl/react-google-maps';
 import { Button } from "@/components/ui/button";
-import "dotenv"
+import ApiKeys from 'env';
 
 const ZoomControl = () => {
   const map = useMap();
@@ -30,6 +30,8 @@ const MapsGoogle = () => {
   const [loading, setLoading] = useState(true);
   const [cameraData, setCameraData] = useState([]); // State to store the camera data from the API
   const [radius, setRadius] = useState(1000); // State to store selected radius in meters
+  const apiKey = ApiKeys.find(api => api.key === "API_KEY")?.value;
+  const mapId = ApiKeys.find(api => api.key === "MAP_ID")?.value;
 
   // Function to fetch camera data
   const fetchCameraData = async (lat, lng, radiusMeters) => {
@@ -96,7 +98,6 @@ const MapsGoogle = () => {
   }
 
   return (
-    // <APIProvider apiKey="AIzaSyBN7WeAsX5Ya5BvLY_4AKQFklaDSBIPylU"> 
     <>
     <div className="flex justify-center gap-4 pb-4 pt-2">
           <Button
@@ -128,14 +129,13 @@ const MapsGoogle = () => {
             5000m
           </Button>
         </div>
-    <APIProvider apiKey="">      
-      <div className="h-[30vh]">
+    <APIProvider apiKey={apiKey}>      
+      <div className="h-[70vh]">
 
         <Map
           defaultZoom={15}
           defaultCenter={position}
-          // mapId="492a1f563fd9d924"
-          mapId=""
+          mapId={mapId}
 
         >
           {/* Marker for the user's current position */}

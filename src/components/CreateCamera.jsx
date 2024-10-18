@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-import { CameraIcon, TicketIcon } from "lucide-react";
+import { CameraIcon, PlusIcon } from "lucide-react";
 
 async function handleCreateCamera({
   cameraLocation,
@@ -150,9 +150,15 @@ const CreateCamera = () => {
         <DialogTrigger asChild>
           <Button
             variant="outlined"
-            className="w-[20vw] bg-back border-2 border-black text-lg"
+            className="w-[20vw] bg-back border-2 border-black text-lg flex items-center justify-center"
           >
-            <CameraIcon className="mr-2 h-4 w-4" /> Create Camera
+            {/* Show full text on larger screens and only the plus icon on mobile */}
+            <span className="hidden lg:inline-flex mr-2">
+              <CameraIcon className="mr-2 h-4 w-4 mt-1" /> Create Camera
+            </span>
+            <span className="lg:hidden">
+              <PlusIcon className="h-4 w-4" />
+            </span>
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
@@ -258,4 +264,4 @@ const CreateCamera = () => {
   );
 };
 
-export default CreateCamera
+export default CreateCamera;
