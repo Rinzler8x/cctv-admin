@@ -4,7 +4,7 @@
 - It serves as the admin panel for managing CCTV locations, monitoring tickets, and handling requests from investigating officers.
 - Officers can search for cameras under a radius, mass upload new cameras into the database using excel sheets, and ticketing system helps double check the new or updated camera details submitted by on ground officers.
 
-**Companion Mobile App:** [Link]
+**Companion Mobile App:** [ https://github.com/ZeusAbhijeet/cctv ]
 
 **Backend API and Database:** [ https://github.com/TheLMNTRIX/Nearby-cctv-camera-detector ]
 
