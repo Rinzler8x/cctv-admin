@@ -84,9 +84,10 @@ const Tickets = () => {
           <div className="flex flex-col gap-6">
             {tickets
               .filter((ticket) => ticket.status === "Pending")
+              .sort((a, b) => new Date(b.reported_at) - new Date(a.reported_at)) 
               .map((ticket) => (
                 <Card
-                  key={ticket.id}
+                  key={ticket.reported_at}
                   onClick={() => handleCardClick(ticket.camera_id, ticket.id)}
                   className="bg-white border-2 border-black cursor-pointer hover:shadow-md"
                 >
