@@ -1,14 +1,10 @@
-# CCTV Admin Panel
-### Prequistes:
-- NodeJS
-- npm
+# SurveilMap Admin Panel
 
-### Setup:
-Execute the following commands in your terminal.
-```
-cd cctv-admin
-npm install
-npm run dev
-```
+This is a **web-based dashboard application** which won the **Goa Police 48-Hour Hackathon 2024**. It serves as the admin panel for managing CCTV locations, monitoring tickets, and handling requests from investigating officers.
 
-- The website will be live at "localhost:5173"
+**Companion Mobile App:** [Link]
+
+**Tech Stack:** React, Tailwind CSS, Shadcn and Vite
+
+### Application Screenshots:
+
